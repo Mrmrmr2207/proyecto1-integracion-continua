@@ -1,0 +1,53 @@
+name: CI - Build y healthcheck
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preparar variables de entorno
+        run: cp .env.example .env
+
+      - name: Construir e iniciar contenedores
+        run: docker compose up --build -d
+
+      - name: Esperar a que la API responda
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5000/health; then
+              echo "API lista en el intento $i"
+              exit 0
+            fi
+            echo "Esperando API... intento $i"
+            sleep 2
+          done
+          echo "La API no respondió a tiempo"
+          docker compose logs
+          exit 1
+
+      - name: Verificar GET /health
+        run: |
+          curl -fsS http://127.0.0.1:5000/health | tee health.json
+          grep -q '"status":"ok"' health.json
+
+      - name: Verificar GET /tareas
+        run: curl -fsS http://127.0.0.1:5000/tareas
+
+      - name: Crear tarea de prueba (POST /tareas)
+        run: |
+          curl -fsS -X POST http://127.0.0.1:5000/tareas \
+            -H "Content-Type: application/json" \
+            -d '{"titulo":"Prueba CI"}'
+
+      - name: Detener contenedores
+        if: always()
+        run: docker compose down -v

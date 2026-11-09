@@ -1,0 +1,20 @@
+# Evidencias de prueba — Proyecto 1 Integración Continua
+# Fecha: 2026-11-09 (America/Bogota)
+#
+# NOTA: En el entorno de construcción (box del agente) no fue posible
+# instalar ni ejecutar Docker Engine (permisos APT / repos Debian no
+# disponibles). Las evidencias de curl reales se deben capturar en la
+# máquina local del estudiante o en el runner de GitHub Actions con:
+#
+#   docker compose up --build -d
+#   curl -s http://localhost:5000/health
+#   curl -s http://localhost:5000/tareas
+#   curl -s -X POST http://localhost:5000/tareas \
+#     -H "Content-Type: application/json" \
+#     -d '{"titulo":"Entregar proyecto 1"}'
+#   docker compose down -v
+#
+# Validación realizada en el box (sin Docker):
+# - Sintaxis de app/app.py: OK (py_compile)
+# - Dependencias listadas en requirements.txt
+# - docker-compose.yml revisado manualmente (servicios api+db, red, healthcheck, depends_on)
