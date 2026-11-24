@@ -12,11 +12,11 @@ registrar() { # nombre, ok(0/1), detalle, segundos
   TOTAL=$((TOTAL+1))
   local det; det=$(printf '%s' "$3" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g')
   if [ "$2" -eq 0 ]; then
-    CASES="$CASES<testcase classname=\"api.tareas\" name=\"$1\" time=\"$4\"><system-out>$det</system-out></testcase>"
+    CASES="$CASES<testcase classname=\"pruebas.api_tareas\" name=\"$1\" time=\"$4\"><system-out>$det</system-out></testcase>"
     echo "[OK]    $1"
   else
     FAILS=$((FAILS+1))
-    CASES="$CASES<testcase classname=\"api.tareas\" name=\"$1\" time=\"$4\"><failure message=\"fallo\">$det</failure></testcase>"
+    CASES="$CASES<testcase classname=\"pruebas.api_tareas\" name=\"$1\" time=\"$4\"><failure message=\"fallo\">$det</failure></testcase>"
     echo "[FALLO] $1 -> $3"
   fi
 }
