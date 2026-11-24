@@ -42,40 +42,20 @@ pipeline {
 
         stage('Verificar API') {
             steps {
-                sh '''
-                    for intento in $(seq 1 30); do
-                        if curl -fsS "$API_URL/health" -o health.json; then
-                            echo "API disponible en el intento $intento"
-                            cat health.json; echo
-                            grep -q '"status":"ok"' health.json
-                            grep -q '"database":"up"' health.json
-                            exit 0
-                        fi
-                        echo "Esperando la API... intento $intento"
-                        sleep 2
-                    done
-                    echo "La API no estuvo disponible dentro del tiempo esperado"
-                    exit 1
-                '''
-                sh 'curl -fsS "$API_URL/tareas" | tee tareas.json; echo'
-                sh '''
-                    curl -fsS -X POST "$API_URL/tareas" \
-                      -H "Content-Type: application/json" \
-                      -d "{\\"titulo\\":\\"Prueba Jenkins build ${BUILD_NUMBER}\\"}" | tee tarea_creada.json; echo
-                    grep -q "Prueba Jenkins build ${BUILD_NUMBER}" tarea_creada.json
-                '''
+                sh 'bash jenkins/pruebas_api.sh'
             }
         }
 
         stage('Registrar resultado') {
             steps {
-                archiveArtifacts artifacts: 'health.json,tareas.json,tarea_creada.json', fingerprint: true
+                archiveArtifacts artifacts: 'health.json,tareas.json,tarea_creada.json,reports/*.xml', fingerprint: true
             }
         }
     }
 
     post {
         always {
+            junit allowEmptyResults: true, testResults: 'reports/*.xml'
             sh 'docker compose ps || true'
             sh 'docker compose logs --no-color || true'
         }
